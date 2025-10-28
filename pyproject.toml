@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+strict = true
+ignore_missing_imports = true
+
+[project]
+name = "dataforge"
+version = "0.1.0"
+description = "AI-powered dataset creation and curation pipeline"
+authors = [{name="DataForge"}]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []

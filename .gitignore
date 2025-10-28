@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+.cache/
+.mypy_cache/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# DataForge
+/data/
+/tmp/
+/logs/
+
+# Node/Playwright
+node_modules/
+playwright/.cache

@@ -1,0 +1,86 @@
+api:
+  tavily:
+    api_key: ${TAVILY_API_KEY}
+    max_results: 10
+    search_depth: "advanced"
+    include_domains: []
+    exclude_domains: []
+    timeout: 30
+    max_retries: 3
+
+  openai:
+    api_key: ${OPENAI_API_KEY}
+    model: "gpt-4-turbo-preview"
+    temperature: 0.3
+    max_tokens: 4096
+    timeout: 60
+    max_retries: 3
+    fallback_model: "gpt-3.5-turbo"
+
+  rate_limiting:
+    tavily_rpm: 60
+    openai_rpm: 3500
+    openai_tpm: 90000
+
+  cost_limits:
+    daily_budget: 10.00
+    per_request_max: 0.50
+    alert_threshold: 8.00
+
+scrapers:
+  tavily:
+    enabled: true
+    topics: ["machine learning", "AI research"]
+    max_results_per_topic: 100
+    include_raw_content: true
+    verify_sources: true
+
+  web:
+    rate_limit: 1
+    timeout: 30
+    max_retries: 3
+
+cleaners:
+  ai_enabled: true
+  gpt_cleaning:
+    enabled: true
+    batch_size: 10
+    prompts:
+      remove_boilerplate: "Remove navigation, ads, and boilerplate. Keep main content only."
+      fix_formatting: "Fix formatting issues, normalize quotes, clean HTML artifacts."
+
+quality:
+  gpt_scoring:
+    enabled: true
+    criteria:
+      - "factual_accuracy"
+      - "coherence"
+      - "educational_value"
+      - "writing_quality"
+      - "originality"
+    threshold: 0.7
+
+  fact_checking:
+    enabled: true
+    use_tavily: true
+    min_sources: 2
+    confidence_threshold: 0.8
+
+enrichment:
+  gpt_enhancement:
+    enabled: true
+    add_summaries: true
+    add_key_points: true
+    classify_topics: true
+    extract_insights: true
+
+  synthetic_generation:
+    enabled: false
+    examples_per_document: 0
+
+validation:
+  ai_validation:
+    enabled: true
+    check_consistency: true
+    verify_facts: true
+    assess_bias: true
