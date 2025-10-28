@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 from ..config import get_settings
 from ..logger import setup_logger
 from ..exceptions import InvalidAPIKeyError
+from .scrape import scrape_tavily_to_jsonl
+from .process import process_raw_to_dataset
 
 
 @click.group()
@@ -50,32 +52,22 @@ def scrape_tavily(topic: str, limit: int, config_path: Path) -> None:
     _ = get_settings(config_path)
 
     async def _run() -> None:
-        from ..scrapers.tavily_scraper import TavilyScraper
-
-        scraper = TavilyScraper()
-        try:
-            docs = await scraper.scrape(topic, limit)
-            # Ensure output directory exists
-            out_dir = Path("data/raw")
-            out_dir.mkdir(parents=True, exist_ok=True)
-            ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            out_path = out_dir / f"tavily_{ts}.jsonl"
-            # Stream JSONL
-            with out_path.open("w", encoding="utf-8") as f:
-                for d in docs:
-                    record = {
-                        "title": d.title,
-                        "url": d.url,
-                        "score": d.source_score,
-                        "content": d.content,
-                        "timestamp": datetime.now().isoformat(),
-                    }
-                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
-            click.echo(f"Saved {len(docs)} documents to ./data/raw/{out_path.name}")
-        finally:
-            await scraper.close()
+        out_path = await scrape_tavily_to_jsonl(topic, limit)
+        saved_count = sum(1 for _ in out_path.open("r", encoding="utf-8"))
+        click.echo(f"\u2713 Saved {saved_count} documents to ./data/raw/{out_path.name}")
 
     asyncio.run(_run())
+
+
+@cli.command(name="process")
+@click.option("--input", "input_path", type=click.Path(path_type=Path, exists=True), required=True)
+@click.option("--output", "output_dir", type=click.Path(path_type=Path), required=True)
+def process_cmd(input_path: Path, output_dir: Path) -> None:
+    """Process raw JSONL to cleaned, deduplicated train/val/test dataset."""
+    stats = process_raw_to_dataset(input_path, output_dir)
+    click.echo(
+        f"Processed: total={stats['total']} removed={stats['removed']} final={stats['final']}"
+    )
 
 
 if __name__ == "__main__":

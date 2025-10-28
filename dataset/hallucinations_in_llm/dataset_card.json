@@ -1,0 +1,12 @@
+{
+  "name": "hallucinations_in_llm",
+  "source": "data/raw/tavily_hallucinations_in_llm_2025-10-28.jsonl",
+  "num_total": 17,
+  "num_after_filter": 17,
+  "num_after_dedup": 17,
+  "splits": {
+    "train": 13,
+    "val": 1,
+    "test": 3
+  }
+}
