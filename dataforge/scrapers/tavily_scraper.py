@@ -29,9 +29,10 @@ class TavilyScraper:
 
     async def scrape(self, topic: str, limit: int = 10) -> List[SourceDocument]:
         logger.info("Scraping via Tavily: topic={} limit={} ", topic, limit)
-        result = await self._client.search(topic, max_results=limit)
+        per_request_limit = min(limit, 100)
+        result = await self._client.search(topic, max_results=per_request_limit)
         docs: List[SourceDocument] = []
-        for d in result.documents[:limit]:
+        for d in result.documents[:per_request_limit]:
             score = _credibility_score(d.url)
             d.source_score = score if d.source_score is None else (d.source_score + score) / 2.0
             docs.append(d)

@@ -1,0 +1,12 @@
+{
+  "name": "Autism_Spectrum_Disorder",
+  "source": "data/raw/tavily_reinforcemen-learning_2025-10-28.jsonl",
+  "num_total": 67,
+  "num_after_filter": 66,
+  "num_after_dedup": 66,
+  "splits": {
+    "train": 52,
+    "val": 6,
+    "test": 8
+  }
+}

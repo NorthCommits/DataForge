@@ -126,12 +126,30 @@ python -m dataforge.cli.main process \
 # Output: Processed: total=20 removed=3 final=17
 ```
 
-### 3. View Results
+### 3. Export to CSV
+
+```bash
+# Export as CSV (Excel-compatible)
+python -m dataforge.cli.main export-csv \
+  --input ./datasets/ai_research \
+  --output ./datasets/ai_research.csv \
+  --mode detailed \
+  --split
+
+# Or export during processing
+python -m dataforge.cli.main process \
+  --input ./data/raw/tavily_ai_research_2025-10-28.jsonl \
+  --output ./datasets/ai_research \
+  --export-csv \
+  --csv-mode detailed
+```
+
+### 4. View Results
 
 ```bash
 # Check dataset structure
 ls ./datasets/ai_research/
-# train.jsonl  val.jsonl  test.jsonl  dataset_card.json
+# train.jsonl  val.jsonl  test.jsonl  train.csv  val.csv  test.csv  dataset_card.json
 
 # View dataset statistics
 cat ./datasets/ai_research/dataset_card.json
@@ -146,6 +164,7 @@ cat ./datasets/ai_research/dataset_card.json
 | `validate-keys` | Check API key configuration | `python -m dataforge.cli.main validate-keys` |
 | `scrape-tavily` | Scrape content using Tavily | `scrape-tavily --topic "ML" --limit 50` |
 | `process` | Process raw data to dataset | `process --input raw.jsonl --output dataset/` |
+| `export-csv` | Export dataset to CSV format | `export-csv --input dataset/ --output data.csv --mode detailed` |
 
 ### Command Options
 
@@ -157,6 +176,35 @@ cat ./datasets/ai_research/dataset_card.json
 **process**
 - `--input`: Input JSONL file (required)
 - `--output`: Output directory (required)
+- `--export-csv`: Export CSV files alongside JSONL (optional flag)
+- `--csv-mode`: CSV column mode: basic, detailed, or full (default: detailed)
+
+**export-csv**
+- `--input`: Input JSONL file or directory with train/val/test.jsonl (required)
+- `--output`: Output CSV file or directory (required)
+- `--mode`: Column configuration: basic, detailed, or full (default: detailed)
+- `--split`: Export as separate CSVs (train.csv, val.csv, test.csv)
+- `--encoding`: File encoding: utf-8 or utf-8-sig (for Excel compatibility)
+- `--delimiter`: CSV delimiter: comma, tab, or semicolon (default: comma)
+- `--include-index`: Include row numbers (optional flag)
+
+### CSV Export Column Modes
+
+- **basic**: `url`, `title`, `content`
+- **detailed**: `url`, `title`, `content`, `score`, `source`
+- **full**: All fields including timestamps, metadata, and flattened nested structures
+
+### Excel Compatibility
+
+For Excel compatibility, use `--encoding utf-8-sig`:
+
+```bash
+python -m dataforge.cli.main export-csv \
+  --input ./datasets/ai_research \
+  --output ./datasets/ai_research.xlsx \
+  --encoding utf-8-sig \
+  --split
+```
 
 ## 🔧 API Integration
 
@@ -202,7 +250,7 @@ async with OpenAIClient() as client:
 ### 4. Dataset Creation
 - **Train/Val/Test Split**: 80/10/10 automatic splitting
 - **Metadata**: Comprehensive dataset cards with statistics
-- **Export Formats**: JSONL, Parquet, HuggingFace datasets
+- **Export Formats**: JSONL, CSV (with Excel compatibility), Parquet, HuggingFace datasets
 
 ## 💰 Cost Management
 
@@ -263,6 +311,30 @@ stats = process_raw_to_dataset(
 print(f"Processed {stats['total']} documents")
 print(f"Removed {stats['removed']} low-quality/duplicate items")
 print(f"Final dataset: {stats['final']} documents")
+```
+
+### CSV Export
+
+```python
+from dataforge.exporters.csv_exporter import ColumnMode, export_to_csv
+from pathlib import Path
+
+# Export single file
+export_to_csv(
+    Path("dataset/train.jsonl"),
+    Path("dataset/train.csv"),
+    mode=ColumnMode.DETAILED,
+    encoding="utf-8-sig",  # Excel compatible
+)
+
+# Export with custom options
+export_to_csv(
+    Path("dataset/train.jsonl"),
+    Path("dataset/train_full.csv"),
+    mode=ColumnMode.FULL,
+    include_index=True,
+    delimiter="\t",  # Tab-separated
+)
 ```
 
 ## 🧪 Testing

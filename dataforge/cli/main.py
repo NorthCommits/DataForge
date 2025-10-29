@@ -13,6 +13,7 @@ from ..logger import setup_logger
 from ..exceptions import InvalidAPIKeyError
 from .scrape import scrape_tavily_to_jsonl
 from .process import process_raw_to_dataset
+from .export import export_csv_cmd
 
 
 @click.group()
@@ -62,12 +63,29 @@ def scrape_tavily(topic: str, limit: int, config_path: Path) -> None:
 @cli.command(name="process")
 @click.option("--input", "input_path", type=click.Path(path_type=Path, exists=True), required=True)
 @click.option("--output", "output_dir", type=click.Path(path_type=Path), required=True)
-def process_cmd(input_path: Path, output_dir: Path) -> None:
+@click.option("--export-csv", is_flag=True, help="Export CSV files alongside JSONL outputs")
+@click.option("--csv-mode", type=click.Choice(["basic", "detailed", "full"], case_sensitive=False), default="detailed", help="CSV column mode")
+def process_cmd(input_path: Path, output_dir: Path, export_csv: bool, csv_mode: str) -> None:
     """Process raw JSONL to cleaned, deduplicated train/val/test dataset."""
     stats = process_raw_to_dataset(input_path, output_dir)
     click.echo(
         f"Processed: total={stats['total']} removed={stats['removed']} final={stats['final']}"
     )
+
+    if export_csv:
+        from ..exporters.csv_exporter import ColumnMode, export_splits_to_csv
+        export_splits_to_csv(
+            input_dir=output_dir,
+            output_dir=output_dir,
+            mode=ColumnMode(csv_mode.lower()),
+            encoding="utf-8",
+            delimiter=",",
+            include_index=False,
+        )
+        click.echo("✓ Exported CSV files to output directory")
+
+
+cli.add_command(export_csv_cmd)
 
 
 if __name__ == "__main__":
